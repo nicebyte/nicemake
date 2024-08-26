@@ -37,12 +37,14 @@ function (nmk_target)
 	cmake_parse_arguments(TGT "" "NAME;TYPE" "SRCS;DEPS;COPTS;PUB_INCLUDES;PVT_INCLUDES;PUB_DEFINES;PUB_DEPS;PVT_DEFINES;OUTPUT_DIR;VS_DEBUGGER_WORKING_DIR" ${ARGN})
   if (TGT_TYPE STREQUAL "lib")
     add_library(${TGT_NAME} STATIC ${TGT_SRCS})
+  elseif(TGT_TYPE STREQUAL "dll")
+    add_library(${TGT_NAME} SHARED ${TGT_SRCS})
   elseif(TGT_TYPE STREQUAL "hdr")    
     add_library(${TGT_NAME} INTERFACE ${TGT_SRCS})
   elseif(TGT_TYPE STREQUAL "exe")
     add_executable(${TGT_NAME} ${TGT_SRCS})
   else()
-    message(FATAL_ERROR "invalid target type")
+    message(FATAL_ERROR "invalid target type ${TGT_NAME}")
   endif()
   # Add dependencies.
   if ( TGT_DEPS )
@@ -84,12 +86,19 @@ function (nmk_target)
   endif()
   # Set output directory.
   if( TGT_OUTPUT_DIR )
+    message("Setting output dir for ${TGT_NAME} to ${TGT_OUTPUT_DIR}")
     set_target_properties(${TGT_NAME} PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${TGT_OUTPUT_DIR}")
+    set_target_properties(${TGT_NAME} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${TGT_OUTPUT_DIR}")
     set_target_properties(${TGT_NAME} PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY_DEBUG "${TGT_OUTPUT_DIR}")
     set_target_properties(${TGT_NAME} PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY_RELEASE "${TGT_OUTPUT_DIR}")  
+    set_target_properties(${TGT_NAME} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY_DEBUG "${TGT_OUTPUT_DIR}")
+    set_target_properties(${TGT_NAME} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY_RELEASE "${TGT_OUTPUT_DIR}")
     set_target_properties(${TGT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${TGT_OUTPUT_DIR}")      
   endif()
 endfunction()
@@ -97,6 +106,10 @@ endfunction()
 # Shortcut for adding a new library target.
 function (nmk_static_library)
    nmk_target(TYPE lib ${ARGN})
+endfunction()
+
+function (nmk_shared_library)
+   nmk_target(TYPE dll ${ARGN})
 endfunction()
 
 # Shortcut for adding a new header-only library target.
