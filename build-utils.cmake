@@ -101,6 +101,17 @@ function (nmk_target)
       LIBRARY_OUTPUT_DIRECTORY_RELEASE "${TGT_OUTPUT_DIR}")
     set_target_properties(${TGT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${TGT_OUTPUT_DIR}")      
   endif()
+  /* lifted from stackoverflow */
+  foreach(source IN LISTS TGT_SRCS)
+        if (IS_ABSOLUTE "${source}")
+            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${source}")
+        else()
+            set(_source_rel "${source}")
+        endif()
+        get_filename_component(_source_path "${_source_rel}" PATH)
+        string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
+        source_group("${_source_path_msvc}" FILES "${source}")
+  endforeach()
 endfunction()
 
 # Shortcut for adding a new library target.
